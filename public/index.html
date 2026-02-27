@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Manager</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <h1>Student Manager</h1>
+    
+    <div>
+      <h2>Add Student</h2>
+      <form id="studentForm">
+        <label for="studentName">Student Name:</label>
+        <input type="text" id="studentName" name="studentName" required />
+        <button type="submit">Add Student</button>
+      </form>
+    </div>
+
+    <div>
+      <h2>Students List</h2>
+      <ul id="studentsList"></ul>
+    </div>
+
+    <script>
+      // Load students when page loads
+      window.onload = loadStudents;
+
+      // Handle form submission
+      document.getElementById('studentForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const studentName = document.getElementById('studentName').value;
+        
+        try {
+          const response = await fetch('/addStudent', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ studentName }),
+          });
+          
+          const data = await response.json();
+          
+          if (response.ok) {
+            alert('Student added successfully!');
+            document.getElementById('studentForm').reset();
+            loadStudents(); // Reload the list
+          } else {
+            alert('Error: ' + data.message);
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          alert('An error occurred while adding student.');
+        }
+      });
+
+      // Load students from server
+      async function loadStudents() {
+        try {
+          const response = await fetch('/students');
+          const students = await response.json();
+          
+          const list = document.getElementById('studentsList');
+          list.innerHTML = '';
+          
+          if (students.length === 0) {
+            list.innerHTML = '<li>No students found</li>';
+          } else {
+            students.forEach(student => {
+              const li = document.createElement('li');
+              li.textContent = student.studentName;
+              list.appendChild(li);
+            });
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          document.getElementById('studentsList').innerHTML = '<li>Error loading students</li>';
+        }
+      }
+    </script>
+  </body>
+</html>
