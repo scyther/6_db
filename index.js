@@ -32,20 +32,52 @@ app.get("/students", async (req, res) => {
 app.post("/addStudent", async (req, res) => {
   try {
     const { studentName } = req.body;
-    
+
     if (!studentName) {
       return res.status(400).json({ message: "Student name is required" });
     }
 
     const student = new Student({ studentName });
     const savedStudent = await student.save();
-    
+
     res.status(201).json(savedStudent);
   } catch (error) {
     res.status(500).json({ message: "Error saving student", error });
   }
 });
 
+// Update a student
+app.put("/students/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { studentName } = req.body;
+    if (!studentName) {
+      return res.status(400).json({ message: "Student name is required" });
+    }
+    const updatedStudent = await Student.findByIdAndUpdate(id, { studentName }, { new: true });
+    if (!updatedStudent) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+    res.json(updatedStudent);
+  } catch (error) {
+    res.status(500).json({ message: "Error updating student", error });
+  }
+});
+
+// Delete a student
+app.delete("/students/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedStudent = await Student.findByIdAndDelete(id);
+    if (!deletedStudent) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+    res.json({ message: "Student deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting student", error });
+  }
+});
+
 app.listen(PORT, () =>
-  console.log(`🚀 Server running on http://localhost:${PORT}`)
+  console.log(`🚀 Server running on http://localhost:${PORT}`),
 );
